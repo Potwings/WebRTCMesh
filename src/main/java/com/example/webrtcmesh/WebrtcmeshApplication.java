@@ -9,5 +9,4 @@ public class WebrtcmeshApplication {
     public static void main(String[] args) {
         SpringApplication.run(WebrtcmeshApplication.class, args);
     }
-
 }
