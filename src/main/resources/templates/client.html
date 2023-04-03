@@ -24,7 +24,7 @@
     let sock = null;
     $("#loginBtn").click(function() {
         let id = $("#id").val();
-        sock = new SockJS("http://172.30.1.67:8080/signalling?id="+id);
+        sock = new SockJS("http://192.168.1.247:8080/signalling?id="+id);
         sock.onmessage = onMessage;
         sock.onclose = onClose;
     });
