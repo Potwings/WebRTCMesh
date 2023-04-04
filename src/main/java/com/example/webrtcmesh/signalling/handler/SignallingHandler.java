@@ -18,6 +18,12 @@ public class SignallingHandler extends TextWebSocketHandler {
 
     Map<String, List<String>> addressMap = new HashMap<>();
 
+    private static final String DELIMITER = ":";
+
+    private static final String CREATE = "create";
+
+    private static final String JOIN = "join";
+
     /**
      * 클라이언트의 포트 정보는 지정해두고 사용하는게 맞고
      * 상대 클라이언트 측의 IP를 비롯한 정보를 불러와 직접 클라이언트 간의 통신을 할 수 있도록 해주는 것이 맞다.
@@ -39,9 +45,19 @@ public class SignallingHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
-        String callee = message.getPayload();
+        String msg = message.getPayload();
+        int headerIndex = msg.indexOf(DELIMITER);
+        String header = msg.substring(0, headerIndex);
+        String body = msg.substring(headerIndex);
+        switch (header) {
+            case CREATE:
+                break;
+
+            case JOIN:
+                break;
+        }
         Gson gson = new Gson();
-        List<String> addressList = addressMap.get(callee);
+        List<String> addressList = addressMap.get(msg);
         String json = gson.toJson(addressList);
         TextMessage textMessage = new TextMessage(json);
         session.sendMessage(textMessage);
