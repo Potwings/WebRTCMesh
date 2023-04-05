@@ -16,7 +16,10 @@ import java.util.Map;
 @Slf4j
 public class SignallingHandler extends TextWebSocketHandler {
 
-    Map<String, List<String>> addressMap = new HashMap<>();
+    //클라이언트 아이디 설정 추후 개발
+    //Map<String, String> idMap = new HashMap<>();
+
+    Map<String, List<String>> chatRoomMap = new HashMap<>();
 
     private static final String DELIMITER = ":";
 
@@ -32,14 +35,9 @@ public class SignallingHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
         String id = (String) session.getAttributes().get("id");
-        List<String> addressList = addressMap.get(id);
-        if (addressList == null) {
-            addressList = new ArrayList<>();
-        }
-        String address = session.getRemoteAddress().toString().substring(1);
-        addressList.add(address);
-        addressMap.put(id, addressList);
-        log.info("{} 채팅방에 {}가 접속", id, address);
+        String clientInfo = session.getRemoteAddress().toString().substring(1);
+        //idMap.put(clientInfo, id);
+        log.info("사용자 접속 : id={}, clientInfo={}", id, clientInfo);
     }
 
     @Override
@@ -49,16 +47,22 @@ public class SignallingHandler extends TextWebSocketHandler {
         int headerIndex = msg.indexOf(DELIMITER);
         String header = msg.substring(0, headerIndex);
         String body = msg.substring(headerIndex);
+        List<String> chatRoom = null;
         switch (header) {
             case CREATE:
+                chatRoom = new ArrayList<>();
+                chatRoom.add(session.getRemoteAddress().toString());
+                chatRoomMap.put(body, chatRoom);
                 break;
 
             case JOIN:
+                chatRoom = chatRoomMap.get(body);
+                chatRoom.add(session.getRemoteAddress().toString());
+                chatRoomMap.put(body, chatRoom);
                 break;
         }
         Gson gson = new Gson();
-        List<String> addressList = addressMap.get(msg);
-        String json = gson.toJson(addressList);
+        String json = gson.toJson(chatRoom);
         TextMessage textMessage = new TextMessage(json);
         session.sendMessage(textMessage);
         log.info("{} 채팅방 접속 요청 : 클라이언트 목록 {}", message.getPayload(), json);
