@@ -16,55 +16,20 @@ import java.util.Map;
 @Slf4j
 public class SignallingHandler extends TextWebSocketHandler {
 
-    //클라이언트 아이디 설정 추후 개발
-    //Map<String, String> idMap = new HashMap<>();
+    List<WebSocketSession> sessionList = new ArrayList<>();
 
-    Map<String, List<String>> chatRoomMap = new HashMap<>();
-
-    private static final String DELIMITER = ":";
-
-    private static final String CREATE = "create";
-
-    private static final String JOIN = "join";
-
-    /**
-     * 클라이언트의 포트 정보는 지정해두고 사용하는게 맞고
-     * 상대 클라이언트 측의 IP를 비롯한 정보를 불러와 직접 클라이언트 간의 통신을 할 수 있도록 해주는 것이 맞다.
-     */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-
-        String id = (String) session.getAttributes().get("id");
-        String clientInfo = session.getRemoteAddress().toString().substring(1);
-        //idMap.put(clientInfo, id);
-        log.info("사용자 접속 : id={}, clientInfo={}", id, clientInfo);
+        sessionList.add(session);
     }
 
+    //클라이언트 단에서 구글 stun 서버와 통신 진행
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-
-        String msg = message.getPayload();
-        int headerIndex = msg.indexOf(DELIMITER);
-        String header = msg.substring(0, headerIndex);
-        String body = msg.substring(headerIndex);
-        List<String> chatRoom = null;
-        switch (header) {
-            case CREATE:
-                chatRoom = new ArrayList<>();
-                chatRoom.add(session.getRemoteAddress().toString());
-                chatRoomMap.put(body, chatRoom);
-                break;
-
-            case JOIN:
-                chatRoom = chatRoomMap.get(body);
-                chatRoom.add(session.getRemoteAddress().toString());
-                chatRoomMap.put(body, chatRoom);
-                break;
+        for(WebSocketSession webSocketSession : sessionList){
+            if(webSocketSession.isOpen() && !session.getId().equals(webSocketSession.getId())){
+                webSocketSession.sendMessage(message);
+            }
         }
-        Gson gson = new Gson();
-        String json = gson.toJson(chatRoom);
-        TextMessage textMessage = new TextMessage(json);
-        session.sendMessage(textMessage);
-        log.info("{} 채팅방 접속 요청 : 클라이언트 목록 {}", message.getPayload(), json);
     }
 }
