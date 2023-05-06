@@ -1,5 +1,6 @@
 package com.example.webrtcmesh.signalling.handler;
 
+import com.example.webrtcmesh.signalling.dto.ChatRoomDTO;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,12 +27,13 @@ public class SignallingHandler extends TextWebSocketHandler {
 
     private static final String JOIN = "join";
 
-    List<WebSocketSession>sessions = new CopyOnWriteArrayList<>();
+    List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
-        for (WebSocketSession webSocketSession : sessions) {
+        String roomName = (String) session.getAttributes().get("roomName");
+        for (WebSocketSession webSocketSession : chatRoomMap.get(roomName)) {
             if (webSocketSession.isOpen() && !session.getId().equals(webSocketSession.getId())) {
                 webSocketSession.sendMessage(message);
             }
@@ -40,7 +42,9 @@ public class SignallingHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        sessions.add(session);
-        log.warn("new Session: " + session);
+        String roomName = (String) session.getAttributes().get("roomName");
+        List<WebSocketSession> sessionList = chatRoomMap.get(roomName);
+        sessionList.add(session);
+        log.warn("{} new Session Add : {} ", roomName, session);
     }
 }

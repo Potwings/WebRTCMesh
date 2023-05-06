@@ -21,10 +21,10 @@ public class HttpSessionInterceptor implements HandshakeInterceptor {
 
         ServletServerHttpRequest sshreq = (ServletServerHttpRequest) request;
         HttpServletRequest servletRequest = sshreq.getServletRequest();
-        String id = (String)servletRequest.getParameter("id");
-        if(!StringUtils.isEmpty(id)){
-            log.warn("id : " + id);
-            attributes.put("id", id);
+        String roomName = (String)servletRequest.getParameter("roomName");
+        if(!StringUtils.isEmpty(roomName)){
+            log.warn("roomName : " + roomName);
+            attributes.put("roomName", roomName);
         }
         return true;
     }

@@ -1,5 +1,7 @@
 //connecting to our signaling server
-var conn = new WebSocket('ws://localhost:8080/signalling');
+const urlParams = new URLSearchParams(window.location.search);
+const roomName = urlParams.get('roomName');
+var conn = new WebSocket('ws://localhost:8080/signalling?roomName=' + roomName);
 console.log("js File load")
 conn.onopen = function() {
     console.log("Connected to the signaling server");
