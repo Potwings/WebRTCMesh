@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<input type="text" name="createRoomName"/>
+<button class="createRoomBtn" onclick="createRoom()">create</button>
+<h4>방 목록</h4>
+<div id="roomList">
+</div>
+
+</body>
+
+<script type="text/javascript">
+
+    // test client로 이동하는 이벤트 추가하는데 button의 텍스트를 파라미터로 전달하도록 수정
+    let joinRoom = function (roomName) {
+        // test 페이지로 넘어가면서 파라미터로 전달
+        // 해당 페이지에서는 파라미터로 전달 받는 동시에 연결 맺기
+        // create offer를 버튼 클릭 시 실행하는게 아닌 로드 시 바로 실행되도록 수정
+        console.log(roomName);
+        location.href ="http://localhost:8080/test?roomName="+roomName;
+    }
+
+    let loadRoomList = function () {
+
+        let roomListDiv = document.querySelector("#roomList");
+
+        fetch("/list", {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(res => res.json()).then(roomList => {
+            let listHTML = "";
+            for (let room of roomList) {
+                listHTML += '<input type="text" name="roomName" value=' + room + ' / readonly> '
+                listHTML += '<button onclick="joinRoom(\''+room +'\')">참여</button> </br>'
+            }
+            roomListDiv.innerHTML = listHTML;
+        })
+    }
+
+    loadRoomList();
+
+    function createRoom() {
+        var roomName = document.querySelector("input[name='createRoomName']").value;
+
+        return fetch("/create", {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: "roomName=" + roomName
+        }).then(res => res.text()).then(result => {
+            console.log(result);
+            loadRoomList();
+        })
+
+    }
+
+</script>
+
+</html>
